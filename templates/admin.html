@@ -1,5 +1,7 @@
-{% extends "base.html" %} {% block title %}Admin Dashboard | CivicPulse{%
-endblock %} {% block content %}
+
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | CivicPulse{% endblock %}
+{% block content %}
 
 <div class="page-heading">
   <div>
@@ -13,26 +15,22 @@ endblock %} {% block content %}
 </div>
 
 <!-- Statistics -->
-
 <div class="grid four stats">
   <div class="stat-card">
     <div class="stat-icon">📋</div>
     <small>Total Complaints</small>
     <strong>{{ stats.total or 0 }}</strong>
   </div>
-
   <div class="stat-card">
     <div class="stat-icon">⏳</div>
     <small>Pending</small>
     <strong>{{ stats.pending or 0 }}</strong>
   </div>
-
   <div class="stat-card">
     <div class="stat-icon">🔄</div>
     <small>In Progress</small>
     <strong>{{ stats.in_progress or 0 }}</strong>
   </div>
-
   <div class="stat-card">
     <div class="stat-icon">✅</div>
     <small>Resolved</small>
@@ -40,8 +38,7 @@ endblock %} {% block content %}
   </div>
 </div>
 
-<!-- Analytics -->
-
+<!-- Complaint Analytics -->
 <div class="panel">
   <div class="panel-heading">
     <div>
@@ -49,25 +46,21 @@ endblock %} {% block content %}
       <h2>Complaint Analytics</h2>
     </div>
   </div>
-
   <div class="chart-container">
     <canvas id="adminChart"></canvas>
   </div>
 </div>
 
-<!-- Advanced CivicPulse Analytics -->
-
+<!-- Advanced Analytics -->
 <div class="panel">
   <span class="eyebrow">SMART CITY INSIGHTS</span>
   <h2>Advanced Analytics</h2>
-
   <div class="resolution-card">
     <div>
       <small>Complaint Resolution Rate</small>
       <h2>{{ resolution_rate }}%</h2>
       <p class="muted">Resolved complaints out of total reports</p>
     </div>
-
     <div class="resolution-circle" style="--rate: {{ resolution_rate }}%">
       <span>{{ resolution_rate }}%</span>
     </div>
@@ -75,7 +68,6 @@ endblock %} {% block content %}
 </div>
 
 <div class="grid two analytics-grid">
-  <!-- Category Chart -->
   <div class="panel">
     <span class="eyebrow">CATEGORY ANALYSIS</span>
     <h2>Complaints by Category</h2>
@@ -84,7 +76,6 @@ endblock %} {% block content %}
     </div>
   </div>
 
-  <!-- Area Chart -->
   <div class="panel">
     <span class="eyebrow">LOCATION ANALYSIS</span>
     <h2>Top Complaint Areas</h2>
@@ -108,12 +99,10 @@ endblock %} {% block content %}
 
   <div class="feedback-rating-card">
     <h3>Average Citizen Rating</h3>
-
     <div class="admin-average-rating">
       {{ "%.1f"|format(feedback_stats.average_rating|float) }}
       <span>★</span>
     </div>
-
     <p>Based on {{ feedback_stats.total_reviews }} citizen reviews</p>
   </div>
 
@@ -122,27 +111,23 @@ endblock %} {% block content %}
     <div class="admin-feedback-card">
       <div class="feedback-card-header">
         <h4>{{ f.citizen_name }}</h4>
-
-        <span class="feedback-rating"> {{ f.rating }} / 5 ★ </span>
+        <span class="feedback-rating">{{ f.rating }} / 5 ★</span>
       </div>
-
       <p><strong>Complaint:</strong> {{ f.complaint_code }}</p>
       <p><strong>Title:</strong> {{ f.title }}</p>
       <p>
-        <strong>Feedback:</strong> {{ f.feedback or "No comment provided." }}
+        <strong>Feedback:</strong>
+        {{ f.feedback or "No comment provided." }}
       </p>
-
       <small>{{ f.created_at }}</small>
     </div>
-
     {% else %}
     <p>No citizen feedback available yet.</p>
     {% endfor %}
   </div>
 </section>
 
-<!-- CivicPulse Complaint Location Map -->
-
+<!-- Complaint Location Map -->
 <div class="panel">
   <div class="panel-heading">
     <div>
@@ -153,7 +138,6 @@ endblock %} {% block content %}
   </div>
 
   <div id="adminComplaintMap"></div>
-
   <p id="mapCount" class="muted"></p>
 </div>
 
@@ -164,74 +148,70 @@ endblock %} {% block content %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
 
-      const complaints = {{ map_complaints | tojson }};
+    const complaints = {{ map_complaints | tojson }};
 
-      const map = L.map("adminComplaintMap")
-          .setView([20.5937, 78.9629], 5);
+    const map = L.map("adminComplaintMap")
+        .setView([20.5937, 78.9629], 5);
 
-      L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-              maxZoom: 19,
-              attribution: '&copy; OpenStreetMap contributors'
-          }
-      ).addTo(map);
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(map);
 
-      const bounds = [];
+    const bounds = [];
 
-      complaints.forEach(function(c) {
+    complaints.forEach(function(c) {
 
-          const lat = Number(c.latitude);
-          const lng = Number(c.longitude);
+        const lat = Number(c.latitude);
+        const lng = Number(c.longitude);
 
-          if (!Number.isFinite(lat) ||
-              !Number.isFinite(lng) ||
-              lat < -90 || lat > 90 ||
-              lng < -180 || lng > 180) {
-              return;
-          }
+        if (!Number.isFinite(lat) ||
+            !Number.isFinite(lng) ||
+            lat < -90 || lat > 90 ||
+            lng < -180 || lng > 180) {
+            return;
+        }
 
-          const marker = L.marker([lat, lng]).addTo(map);
+        const marker = L.marker([lat, lng]).addTo(map);
+        const popup = document.createElement("div");
 
-          const popup = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = c.title;
 
-          const title = document.createElement("strong");
-          title.textContent = c.title;
+        const details = document.createElement("p");
+        details.textContent =
+            "ID: " + c.code +
+            " | Category: " + c.category +
+            " | Status: " + c.status;
 
-          const details = document.createElement("p");
-          details.textContent =
-              "ID: " + c.code +
-              " | Category: " + c.category +
-              " | Status: " + c.status;
+        const location = document.createElement("p");
+        location.textContent = "Location: " + c.location;
 
-          const location = document.createElement("p");
-          location.textContent = "Location: " + c.location;
+        popup.append(title, details, location);
+        marker.bindPopup(popup);
 
-          popup.append(title, details, location);
-          marker.bindPopup(popup);
+        bounds.push([lat, lng]);
+    });
 
-          bounds.push([lat, lng]);
+    if (bounds.length > 0) {
+        map.fitBounds(bounds, {padding: [30, 30]});
+    }
 
-      });
+    document.getElementById("mapCount").textContent =
+        "Total complaints with map locations: " + bounds.length;
 
-      if (bounds.length > 0) {
-          map.fitBounds(bounds, {padding: [30, 30]});
-      }
-
-      document.getElementById("mapCount").textContent =
-          "Total complaints with map locations: " + bounds.length;
-
-      setTimeout(function() {
-          map.invalidateSize();
-      }, 300);
-
-  });
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 300);
+});
 </script>
 
 <!-- Complaint Management -->
-
 <div class="panel">
   <div class="panel-heading">
     <div>
@@ -241,7 +221,6 @@ endblock %} {% block content %}
   </div>
 
   <!-- Search and Filters -->
-
   <form
     method="GET"
     action="{{ url_for('admin_dashboard') }}"
@@ -254,46 +233,45 @@ endblock %} {% block content %}
       value="{{ search }}"
     />
 
-   
-<select name="status">
-    <option value="">All Statuses</option>
+    <!-- Status Filter -->
+    <select name="status">
+      <option value="">All Statuses</option>
 
-    <option value="Pending"
+      <option value="Pending"
         {% if status_filter == "Pending" %}selected{% endif %}>
         Pending
-    </option>
+      </option>
 
-    <option value="In Progress"
+      <option value="In Progress"
         {% if status_filter == "In Progress" %}selected{% endif %}>
         In Progress
-    </option>
+      </option>
 
-    <option value="Resolved"
+      <option value="Resolved"
         {% if status_filter == "Resolved" %}selected{% endif %}>
         Resolved
-    </option>
-</select>
+      </option>
+    </select>
 
-   
-<select name="category">
-    <option value="">All Categories</option>
+    <!-- Category Filter -->
+    <select name="category">
+      <option value="">All Categories</option>
 
-    {% for category in categories %}
-    <option value="{{ category }}"
+      {% for category in categories %}
+      <option value="{{ category }}"
         {% if category_filter == category %}selected{% endif %}>
         {{ category }}
-    </option>
-    {% endfor %}
-</select>
-
+      </option>
+      {% endfor %}
+    </select>
 
     <button type="submit" class="btn primary">Search / Filter</button>
-
-    <a href="{{ url_for('admin_dashboard') }}" class="btn secondary"> Reset </a>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn secondary">
+      Reset
+    </a>
   </form>
 
   <!-- Complaints Table -->
-
   {% if complaints %}
 
   <div class="table-wrap">
@@ -312,7 +290,6 @@ endblock %} {% block content %}
 
       <tbody>
         {% for c in complaints %}
-
         <tr>
           <td>
             <b>{{ c.complaint_code }}</b>
@@ -363,43 +340,20 @@ endblock %} {% block content %}
                 value="{{ csrf_token() }}"
               />
 
+              <!-- Corrected Update Status Dropdown -->
               <select name="status">
-                <option
-                  value="Pending"
-                  {%
-                  if
-                  c.status=""
-                  ="Pending"
-                  %}selected{%
-                  endif
-                  %}
-                >
+                <option value="Pending"
+                  {% if c.status == "Pending" %}selected{% endif %}>
                   Pending
                 </option>
 
-                <option
-                  value="In Progress"
-                  {%
-                  if
-                  c.status=""
-                  ="In Progress"
-                  %}selected{%
-                  endif
-                  %}
-                >
+                <option value="In Progress"
+                  {% if c.status == "In Progress" %}selected{% endif %}>
                   In Progress
                 </option>
 
-                <option
-                  value="Resolved"
-                  {%
-                  if
-                  c.status=""
-                  ="Resolved"
-                  %}selected{%
-                  endif
-                  %}
-                >
+                <option value="Resolved"
+                  {% if c.status == "Resolved" %}selected{% endif %}>
                   Resolved
                 </option>
               </select>
@@ -409,11 +363,11 @@ endblock %} {% block content %}
                 placeholder="Enter admin remarks..."
                 rows="2"
                 class="admin-remark-input"
-              >
-{{ c.admin_remark or '' }}</textarea
-              >
+              >{{ c.admin_remark or '' }}</textarea>
 
-              <button type="submit" class="btn primary small">Save</button>
+              <button type="submit" class="btn primary small">
+                Save
+              </button>
             </form>
           </td>
 
@@ -426,152 +380,141 @@ endblock %} {% block content %}
             </a>
           </td>
         </tr>
-
         {% endfor %}
       </tbody>
     </table>
   </div>
 
   {% else %}
-
   <div class="empty-state">
     <div>🔍</div>
     <h3>No complaints found</h3>
     <p>Try changing your search or filter.</p>
   </div>
-
   {% endif %}
 </div>
 
 <!-- Chart.js -->
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  const adminCanvas = document.getElementById("adminChart");
+const adminCanvas = document.getElementById("adminChart");
 
-  new Chart(adminCanvas, {
+new Chart(adminCanvas, {
+    type: "doughnut",
+    data: {
+        labels: ["Pending", "In Progress", "Resolved"],
+        datasets: [{
+            data: [
+                {{ stats.pending or 0 }},
+                {{ stats.in_progress or 0 }},
+                {{ stats.resolved or 0 }}
+            ],
+            backgroundColor: [
+                "#f5b942",
+                "#3b82f6",
+                "#22c55e"
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: "bottom"
+            }
+        }
+    }
+});
 
-      type: "doughnut",
+const categoryData = {{ category_stats | tojson }};
 
-      data: {
-          labels: ["Pending", "In Progress", "Resolved"],
+new Chart(document.getElementById("categoryChart"), {
+    type: "bar",
+    data: {
+        labels: categoryData.map(item => item.category),
+        datasets: [{
+            label: "Complaints",
+            data: categoryData.map(item => item.total),
+            backgroundColor: "#3b82f6",
+            borderRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
 
-          datasets: [{
-              data: [
-                  {{ stats.pending or 0 }},
-                  {{ stats.in_progress or 0 }},
-                  {{ stats.resolved or 0 }}
-              ],
+const areaData = {{ area_stats | tojson }};
 
-              backgroundColor: [
-                  "#f5b942",
-                  "#3b82f6",
-                  "#22c55e"
-              ],
+new Chart(document.getElementById("areaChart"), {
+    type: "bar",
+    data: {
+        labels: areaData.map(item => item.location),
+        datasets: [{
+            label: "Complaints",
+            data: areaData.map(item => item.total),
+            backgroundColor: "#14b8a6",
+            borderRadius: 7
+        }]
+    },
+    options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
 
-              borderWidth: 0
-          }]
-      },
+const monthlyData = {{ monthly_stats | tojson }};
 
-      options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-              legend: {
-                  position: "bottom"
-              }
-          }
-      }
-
-  });
-
-  const categoryData = {{ category_stats | tojson }};
-
-  new Chart(document.getElementById("categoryChart"), {
-      type: "bar",
-      data: {
-          labels: categoryData.map(item => item.category),
-          datasets: [{
-              label: "Complaints",
-              data: categoryData.map(item => item.total),
-              backgroundColor: "#3b82f6",
-              borderRadius: 7
-          }]
-      },
-      options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-              legend: { display: false }
-          },
-          scales: {
-              y: {
-                  beginAtZero: true,
-                  ticks: { precision: 0 }
-              }
-          }
-      }
-  });
-
-  const areaData = {{ area_stats | tojson }};
-
-  new Chart(document.getElementById("areaChart"), {
-      type: "bar",
-      data: {
-          labels: areaData.map(item => item.location),
-          datasets: [{
-              label: "Complaints",
-              data: areaData.map(item => item.total),
-              backgroundColor: "#14b8a6",
-              borderRadius: 7
-          }]
-      },
-      options: {
-          indexAxis: "y",
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-              legend: { display: false }
-          },
-          scales: {
-              x: {
-                  beginAtZero: true,
-                  ticks: { precision: 0 }
-              }
-          }
-      }
-  });
-
-  const monthlyData = {{ monthly_stats | tojson }};
-
-  new Chart(document.getElementById("monthlyChart"), {
-      type: "line",
-      data: {
-          labels: monthlyData.map(item => item.month),
-          datasets: [{
-              label: "Complaints",
-              data: monthlyData.map(item => item.total),
-              borderColor: "#2563eb",
-              backgroundColor: "rgba(37,99,235,0.12)",
-              fill: true,
-              tension: 0.35
-          }]
-      },
-      options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-              legend: { position: "bottom" }
-          },
-          scales: {
-              y: {
-                  beginAtZero: true,
-                  ticks: { precision: 0 }
-              }
-          }
-      }
-  });
+new Chart(document.getElementById("monthlyChart"), {
+    type: "line",
+    data: {
+        labels: monthlyData.map(item => item.month),
+        datasets: [{
+            label: "Complaints",
+            data: monthlyData.map(item => item.total),
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37,99,235,0.12)",
+            fill: true,
+            tension: 0.35
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: "bottom" }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
 </script>
 
 {% endblock %}
