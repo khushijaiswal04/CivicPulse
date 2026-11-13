@@ -254,45 +254,25 @@ endblock %} {% block content %}
       value="{{ search }}"
     />
 
-    <select name="status">
-      <option value="">All Statuses</option>
-      <option
-        value="Pending"
-        {%
-        if
-        status_filter=""
-        ="Pending"
-        %}selected{%
-        endif
-        %}
-      >
+   
+<select name="status">
+    <option value="">All Statuses</option>
+
+    <option value="Pending"
+        {% if status_filter == "Pending" %}selected{% endif %}>
         Pending
-      </option>
-      <option
-        value="In Progress"
-        {%
-        if
-        status_filter=""
-        ="In Progress"
-        %}selected{%
-        endif
-        %}
-      >
+    </option>
+
+    <option value="In Progress"
+        {% if status_filter == "In Progress" %}selected{% endif %}>
         In Progress
-      </option>
-      <option
-        value="Resolved"
-        {%
-        if
-        status_filter=""
-        ="Resolved"
-        %}selected{%
-        endif
-        %}
-      >
+    </option>
+
+    <option value="Resolved"
+        {% if status_filter == "Resolved" %}selected{% endif %}>
         Resolved
-      </option>
-    </select>
+    </option>
+</select>
 
     <select name="category">
       <option value="">All Categories</option>
