@@ -1,0 +1,277 @@
+{% extends "base.html" %} {% block title %}Citizen Dashboard | CivicPulse{%
+endblock %} {% block content %}
+
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">CITIZEN DASHBOARD</span>
+    <h1>Welcome, {{ session.get('name') }} 👋</h1>
+    <p class="muted">Track and manage your community complaints.</p>
+  </div>
+
+  <a href="{{ url_for('report') }}" class="btn primary"> + Report New Issue </a>
+</div>
+
+<!-- Statistics Cards -->
+
+<div class="grid four stats">
+  <div class="stat-card">
+    <div class="stat-icon">📋</div>
+    <small>Total Complaints</small>
+    <strong>{{ stats.total or 0 }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon">⏳</div>
+    <small>Pending</small>
+    <strong>{{ stats.pending or 0 }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon">🔄</div>
+    <small>In Progress</small>
+    <strong>{{ stats.in_progress or 0 }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon">✅</div>
+    <small>Resolved</small>
+    <strong>{{ stats.resolved or 0 }}</strong>
+  </div>
+</div>
+
+<!-- Analytics Chart -->
+
+<div class="panel analytics-panel">
+  <div class="panel-heading">
+    <div>
+      <span class="eyebrow">REPORT OVERVIEW</span>
+      <h2>Complaint Analytics</h2>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="complaintChart"></canvas>
+  </div>
+</div>
+
+<!-- Recent Complaints -->
+
+<div class="panel">
+  <div class="panel-heading">
+    <div>
+      <span class="eyebrow">YOUR REPORTS</span>
+      <h2>Recent Complaints</h2>
+    </div>
+
+    <a href="{{ url_for('track') }}">Track Complaint</a>
+  </div>
+
+  {% if complaints %}
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Complaint ID</th>
+          <th>Issue Title</th>
+          <th>Category</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for c in complaints %}
+
+        <tr>
+          <td>{{ c.complaint_code }}</td>
+
+          <td>{{ c.title }}</td>
+
+          <td>{{ c.category }}</td>
+
+          <td>{{ c.location }}</td>
+
+          <td>
+            <span class="status {{ c.status|lower|replace(' ','-') }}">
+              {{ c.status }}
+            </span>
+          </td>
+
+          <td>
+            {{ c.created_at.strftime('%d %b %Y') if c.created_at else '' }}
+          </td>
+        </tr>
+
+        {% if c.admin_remark %}
+        <tr>
+          <td colspan="6">
+            <div class="citizen-admin-remark">
+              <h4>📢 Admin Update</h4>
+
+              <p>{{ c.admin_remark }}</p>
+
+              <small> Latest remark from CivicPulse Administration </small>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+
+        <tr>
+          <td colspan="6">
+            <div class="status-timeline">
+              <h4>Complaint Progress</h4>
+
+              <div class="timeline-item completed">
+                <span class="timeline-dot"></span>
+                <div>
+                  <strong>Pending</strong>
+                  <small>Complaint submitted</small>
+                </div>
+              </div>
+
+              {% for h in c.status_history %}
+              <div class="timeline-item completed">
+                <span class="timeline-dot"></span>
+                <div>
+                  <strong>{{ h.new_status }}</strong>
+                  <small>
+                    {{ h.changed_at.strftime('%d %b %Y, %I:%M %p') }}
+                  </small>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+
+        {% if c.status == "Resolved" %}
+        <tr>
+          <td colspan="6">
+            {% if c.user_rating %}
+            <div class="feedback-submitted">
+              <h4>Your Feedback</h4>
+
+              <div class="rating-stars">
+                {% for i in range(1, 6) %} {% if i <= c.user_rating %}
+                <span class="star active">★</span>
+                {% else %}
+                <span class="star">★</span>
+                {% endif %} {% endfor %}
+              </div>
+
+              <p>{{ c.user_feedback or "No comment added." }}</p>
+              <small>Feedback submitted successfully</small>
+            </div>
+
+            {% else %}
+            <form
+              method="POST"
+              action="{{ url_for('submit_feedback', complaint_id=c.id) }}"
+              class="feedback-form"
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              />
+
+              <h4>Rate Your Experience</h4>
+
+              <label for="rating-{{ c.id }}">Rating (1–5 stars)</label>
+
+              <select name="rating" id="rating-{{ c.id }}" required>
+                <option value="">Select Rating</option>
+                <option value="5">★★★★★ - Excellent</option>
+                <option value="4">★★★★ - Very Good</option>
+                <option value="3">★★★ - Good</option>
+                <option value="2">★★ - Fair</option>
+                <option value="1">★ - Poor</option>
+              </select>
+
+              <textarea
+                name="feedback"
+                placeholder="Write your feedback..."
+                rows="3"
+              ></textarea>
+
+              <button type="submit">Submit Feedback</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endif %} {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+
+  <div class="empty-state">
+    <div>📭</div>
+    <h3>No complaints yet</h3>
+    <p>Start by reporting your first community issue.</p>
+
+    <a href="{{ url_for('report') }}" class="btn primary">
+      Report Your First Issue
+    </a>
+  </div>
+
+  {% endif %}
+</div>
+
+<!-- Chart.js Library -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const chartElement = document.getElementById("complaintChart");
+
+  new Chart(chartElement, {
+
+      type: "doughnut",
+
+      data: {
+
+          labels: [
+              "Pending",
+              "In Progress",
+              "Resolved"
+          ],
+
+          datasets: [{
+              data: [
+                  {{ stats.pending or 0 }},
+                  {{ stats.in_progress or 0 }},
+                  {{ stats.resolved or 0 }}
+              ],
+
+              backgroundColor: [
+                  "#f5b942",
+                  "#3b82f6",
+                  "#22c55e"
+              ],
+
+              borderWidth: 0,
+              hoverOffset: 8
+          }]
+
+      },
+
+      options: {
+
+          responsive: true,
+          maintainAspectRatio: false,
+
+          plugins: {
+              legend: {
+                  position: "bottom"
+              }
+          }
+      }
+
+  });
+</script>
+
+{% endblock %}

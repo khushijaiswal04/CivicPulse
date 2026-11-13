@@ -1,0 +1,41 @@
+{% extends "base.html" %} {% block title %}Create account | CivicPulse{%
+endblock %} {% block content %}
+<section class="form-wrap">
+  <div class="form-card">
+    <span class="eyebrow">JOIN YOUR COMMUNITY</span>
+    <h1>Create an account</h1>
+    <p class="muted">Start reporting local issues in a few steps.</p>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <label
+        >Full name<input
+          type="text"
+          name="name"
+          required
+          maxlength="100"
+          autocomplete="name"
+      /></label>
+      <label
+        >Email address<input
+          type="email"
+          name="email"
+          required
+          autocomplete="email"
+      /></label>
+      <label
+        >Password<input
+          type="password"
+          name="password"
+          required
+          minlength="8"
+          autocomplete="new-password"
+        /><small>At least 8 characters.</small></label
+      >
+      <button class="btn primary full" type="submit">Create account</button>
+    </form>
+    <p class="form-foot">
+      Already registered? <a href="{{ url_for('login') }}">Login</a>
+    </p>
+  </div>
+</section>
+{% endblock %}

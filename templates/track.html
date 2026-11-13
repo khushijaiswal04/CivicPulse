@@ -1,0 +1,37 @@
+{% extends "base.html" %} {% block title %}Track complaint | CivicPulse{%
+endblock %} {% block content %}
+<section class="form-wrap">
+  <div class="form-card">
+    <span class="eyebrow">COMPLAINT STATUS</span>
+    <h1>Track your complaint</h1>
+    <p class="muted">
+      Enter the complaint ID you received after submitting a report.
+    </p>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <label
+        >Complaint ID<input
+          name="complaint_code"
+          required
+          placeholder="e.g. CP-A1B2C3D4"
+      /></label>
+      <button class="btn primary full" type="submit">Find complaint</button>
+    </form>
+    {% if complaint %}
+    <div class="tracking-result">
+      <span class="eyebrow">RESULT</span>
+      <h2>{{ complaint.title }}</h2>
+      <p><b>{{ complaint.complaint_code }}</b> · {{ complaint.category }}</p>
+      <p>{{ complaint.location }}</p>
+      <p>
+        Status:
+        <span class="status {{ complaint.status|lower|replace(' ','-') }}"
+          >{{ complaint.status }}</span
+        >
+      </p>
+      <small>Last updated: {{ complaint.updated_at }}</small>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="details-container">
+  <h1>Complaint Details</h1>
+
+  <div class="details-card">
+    <h2>{{ complaint.title }}</h2>
+
+    <p><strong>Complaint ID:</strong> {{ complaint.complaint_code }}</p>
+
+    <p><strong>Citizen Name:</strong> {{ complaint.citizen_name }}</p>
+
+    <p><strong>Email:</strong> {{ complaint.citizen_email }}</p>
+
+    <p><strong>Category:</strong> {{ complaint.category }}</p>
+
+    <p><strong>Priority:</strong> {{ complaint.priority }}</p>
+
+    <p><strong>Status:</strong> {{ complaint.status }}</p>
+
+    <p><strong>Location:</strong> {{ complaint.location }}</p>
+
+    <p><strong>Description:</strong></p>
+    <p>{{ complaint.description }}</p>
+
+    {% if complaint.image %}
+    <div class="complaint-image-section">
+      <h3>Uploaded Complaint Image</h3>
+
+      <img
+        src="{{ url_for('static', filename='uploads/' + complaint.image) }}"
+        alt="Complaint Image"
+        class="complaint-preview"
+      />
+    </div>
+    {% endif %}
+
+    <a href="{{ url_for('admin_dashboard') }}" class="back-button">
+      Back to Admin Dashboard
+    </a>
+  </div>
+</div>
+
+{% endblock %}

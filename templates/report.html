@@ -1,0 +1,179 @@
+{% extends "base.html" %} {% block title %}Report an issue | CivicPulse{%
+endblock %} {% block content %}
+<section class="form-wrap wide">
+  <div class="form-card">
+    <span class="eyebrow">MAKE YOUR VOICE HEARD</span>
+    <h1>Report a community issue</h1>
+    <p class="muted">
+      Share clear details so the issue can be understood and addressed.
+    </p>
+    <form method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <label
+        >Issue title<input
+          type="text"
+          name="title"
+          required
+          maxlength="150"
+          placeholder="e.g. Street light not working"
+      /></label>
+      <label
+        >Category
+
+        <select name="category" id="category" required>
+          <option value="">Choose a category</option>
+
+          <option value="Road">Road</option>
+          <option value="Water Supply">Water Supply</option>
+          <option value="Electricity">Electricity</option>
+          <option value="Garbage">Garbage</option>
+          <option value="Drainage">Drainage</option>
+          <option value="Public Safety">Public Safety</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <!-- Smart Category Suggestion -->
+
+      <div class="smart-suggestion">
+        <div class="smart-heading">
+          <span>🤖 Smart Category Assistant</span>
+          <span class="smart-tag">SMART</span>
+        </div>
+
+        <p>
+          Write your complaint description and let CivicPulse suggest a suitable
+          category.
+        </p>
+
+        <button type="button" id="suggestCategory" class="btn secondary">
+          ✨ Suggest Category
+        </button>
+
+        <div
+          id="categorySuggestion"
+          class="suggestion-result"
+          aria-live="polite"
+        ></div>
+      </div>
+      <label
+        >Description<textarea
+          name="description"
+          rows="5"
+          required
+          placeholder="Explain what happened, how long it has been happening, etc."
+        ></textarea>
+      </label>
+      <label
+        >Location<input
+          type="text"
+          name="location"
+          required
+          maxlength="255"
+          placeholder="Area, street, landmark, city"
+      /></label>
+
+      <!-- Map Location Picker -->
+
+      <div class="map-section">
+        <h3>📍 Select Complaint Location</h3>
+
+        <p class="muted">
+          Click on the map to select the exact location of your complaint.
+        </p>
+
+        <div id="complaintMap"></div>
+
+        <button type="button" id="locateMe" class="btn secondary">
+          Use My Current Location
+        </button>
+
+        <p id="selectedLocation" class="map-message">
+          No location selected yet.
+        </p>
+
+        <input type="hidden" name="latitude" id="latitude" required />
+
+        <input type="hidden" name="longitude" id="longitude" required />
+      </div>
+
+      <!-- Leaflet CSS -->
+      <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      />
+
+      <!-- Leaflet JavaScript -->
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const map = L.map("complaintMap").setView([20.5937, 78.9629], 5);
+
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors",
+          }).addTo(map);
+
+          let marker = null;
+
+          function selectLocation(lat, lng) {
+            document.getElementById("latitude").value = lat.toFixed(7);
+            document.getElementById("longitude").value = lng.toFixed(7);
+
+            document.getElementById("selectedLocation").textContent =
+              "Selected: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+
+            if (marker) {
+              marker.setLatLng([lat, lng]);
+            } else {
+              marker = L.marker([lat, lng]).addTo(map);
+            }
+          }
+
+          map.on("click", function (event) {
+            selectLocation(event.latlng.lat, event.latlng.lng);
+          });
+
+          document
+            .getElementById("locateMe")
+            .addEventListener("click", function () {
+              if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser.");
+                return;
+              }
+
+              navigator.geolocation.getCurrentPosition(
+                function (position) {
+                  const lat = position.coords.latitude;
+                  const lng = position.coords.longitude;
+
+                  map.setView([lat, lng], 16);
+                  selectLocation(lat, lng);
+                },
+                function () {
+                  alert(
+                    "Location permission denied or unavailable. Select a location manually on the map.",
+                  );
+                },
+              );
+            });
+
+          setTimeout(function () {
+            map.invalidateSize();
+          }, 300);
+        });
+      </script>
+
+      <label
+        >Upload a photo (optional)<input
+          type="file"
+          name="image"
+          accept="image/png,image/jpeg,image/webp"
+        /><small>Image formats: PNG, JPG or WEBP. Maximum 5 MB.</small></label
+      >
+      <button class="btn primary full" type="submit">Submit complaint</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

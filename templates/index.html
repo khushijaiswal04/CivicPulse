@@ -1,0 +1,58 @@
+{% extends "base.html" %} {% block title %}CivicPulse | Your City, Your Voice{%
+endblock %} {% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">CITIZEN-POWERED • COMMUNITY-FOCUSED</span>
+    <h1>Your city.<br /><span>Your voice.</span> Your change.</h1>
+    <p>
+      Report local issues, follow their progress, and help make your
+      neighbourhood a better place to live.
+    </p>
+    <div class="hero-actions">
+      {% if session.get('user_id') %}<a
+        class="btn primary"
+        href="{{ url_for('report') }}"
+        >Report an issue</a
+      >
+      {% else %}<a class="btn primary" href="{{ url_for('register') }}"
+        >Report an issue</a
+      >{% endif %}
+      <a class="btn secondary" href="{{ url_for('track') }}"
+        >Track a complaint</a
+      >
+    </div>
+  </div>
+  <div class="hero-art">
+    <div class="art-circle"><span>🏙️</span></div>
+    <div class="floating-card">
+      <b>Make your voice count</b
+      ><small>One report can make a difference.</small>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="section-heading">
+    <span class="eyebrow">HOW IT WORKS</span>
+    <h2>Small steps. Real impact.</h2>
+  </div>
+  <div class="grid three">
+    <article class="feature-card">
+      <div class="feature-icon">📝</div>
+      <h3>1. Report</h3>
+      <p>
+        Describe the issue, add its location and upload a photo if you have one.
+      </p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon">🔎</div>
+      <h3>2. Track</h3>
+      <p>Use your unique complaint ID to see the latest status.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon">🌱</div>
+      <h3>3. Improve</h3>
+      <p>Follow progress and help build a cleaner, safer community.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}
